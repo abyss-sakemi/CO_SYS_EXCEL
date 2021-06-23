@@ -5,7 +5,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 /**
  * xls形式のWorkbook書込処理(EXCEL97)
- * @author Abyss
+ * @author Abyss-sakemi
  */
 public class WriteHSSFWorkbook {
 

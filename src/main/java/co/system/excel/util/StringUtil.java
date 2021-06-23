@@ -7,7 +7,7 @@ import lombok.Getter;
 
 /**
  * 文字列変換共通クラス
- * @author Abyss
+ * @author Abyss-sakemi
  */
 public class StringUtil {
 	

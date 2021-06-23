@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 /**
  * ワークブック情報格納クラス
- * @author Abyss
+ * @author Abyss-sakemi
  */
 public class WorkbookEntity {
 

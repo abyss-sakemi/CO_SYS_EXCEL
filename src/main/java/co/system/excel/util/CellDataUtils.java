@@ -13,7 +13,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 /**
  * セルの情報を設定するクラス
- * @author Abyss
+ * @author Abyss-sakemi
  */
 public class CellDataUtils {
 

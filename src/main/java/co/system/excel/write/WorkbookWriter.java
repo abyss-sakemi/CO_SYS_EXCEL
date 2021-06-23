@@ -26,12 +26,7 @@ import co.system.excel.write.xssf.WriteXSSFWorkbook;
 
 /**
  * Excel出力Util
- * 参考サイト１ : https://qiita.com/s-tsuchida/items/1c7dcdd56c65b707855b
- * 参考サイト２ : https://blog.java-reference.com/poi-copy-sheet/
- * 参考サイト３ : https://blog.java-reference.com/poi-join-cell/
- * 参考サイト４ : https://www.javadrive.jp/poi/sheet/index6.html
- * 参考サイト５ : https://cyzennt.co.jp/blog/2020/06/06/eclipse-maven-%E3%81%A7-apache-poi-%E3%82%92%E7%94%A8%E3%81%84%E3%81%A6excel%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E5%87%BA%E5%8A%9B%E3%81%99%E3%82%8B%E7%92%B0%E5%A2%83%E3%81%AE%E6%A7%8B/
- * @author Abyss
+ * @author abyss-sakemi
  */
 public class WorkbookWriter {
 	/** パス */
@@ -148,23 +143,23 @@ public class WorkbookWriter {
 		String trimSheetName = sheetName.trim();
 		System.out.println("**処理開始**[" + trimSheetName + "] シートの [" + cell + "] : [" + value + "]で作成****");
 		try {
-		//cellのA1方式をR1C1方式で取得(rowで行の数値, columnで列の数値)
-		HashMap<String, Integer> cells = CellDataUtils.convertCell(cell);
+			//cellのA1方式をR1C1方式で取得(rowで行の数値, columnで列の数値)
+			HashMap<String, Integer> cells = CellDataUtils.convertCell(cell);
 
-		//シート取得
-		Sheet nowSheet = sheetMap.get(trimSheetName).getSheet();
+			//シート取得
+			Sheet nowSheet = sheetMap.get(trimSheetName).getSheet();
 
-		//セルと行の初期化
-		Row row = CellDataUtils.getRow(nowSheet, cells.get("row"));
-		Cell cel = CellDataUtils.getCell(row, cells.get("column"));
+			//セルと行の初期化
+			Row row = CellDataUtils.getRow(nowSheet, cells.get("row"));
+			Cell cel = CellDataUtils.getCell(row, cells.get("column"));
 
-		//セルに値を設定する。
-		cel.setCellValue(value);
+			//セルに値を設定する。
+			cel.setCellValue(value);
 
-	} catch (Exception e) {
-		System.out.println("右記の格納に失敗しています。 : " + cell);
-		e.printStackTrace();
-	}
+		} catch (Exception e) {
+			System.out.println("右記の格納に失敗しています。 : " + cell);
+			e.printStackTrace();
+		}
 		System.out.println("**正常終了**[" + trimSheetName + "] シートの [" + cell + "] : [" + value + "]で作成****");
 	}
 

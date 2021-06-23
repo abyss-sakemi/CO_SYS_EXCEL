@@ -9,7 +9,7 @@ import lombok.Data;
 
 /**
  * シート情報格納クラス
- * @author abyss
+ * @author abyss-sakemi
  */
 @Data
 public class SheetEntity {

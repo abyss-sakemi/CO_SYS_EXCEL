@@ -5,7 +5,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  * xlsx形式のWorkbook書込処理(EXCEL2007)
- * @author Abyss
+ * @author Abyss-sakemi
  */
 public class WriteXSSFWorkbook {
 
