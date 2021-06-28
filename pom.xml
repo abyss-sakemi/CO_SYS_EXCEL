@@ -1,15 +1,36 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>abyss.sakemi</groupId>
-  <artifactId>CO_SYS_EXCEL</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  
-  	<!-- ★ここから -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>abyss.sakemi</groupId>
+	<artifactId>CO_SYS_EXCEL</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<!-- ビルド -->
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<outputDirectory>src/main/webapp/WEB-INF/classes</outputDirectory>
+		<!-- リソースを含める -->
+		<resources>
+			<resource>
+				<directory>${project.basedir}/src/main/java</directory>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+			</plugin>
+		</plugins>
+	</build>
+
 	<!-- 文字コードとJavaのバージョンの設定 -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- 筆者の環境ではバージョンは8に設定します -->
+		<!-- バージョンは8に設定します -->
 		<java.version>1.8</java.version>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 	
 	<!--依存関係 -->
@@ -35,7 +56,7 @@
 			<artifactId>poi-ooxml-schemas</artifactId>
 			<version>3.17</version>
 		</dependency>
-		
+
 		<!-- lombokの追加 -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
