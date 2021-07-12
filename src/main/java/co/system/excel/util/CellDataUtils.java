@@ -19,25 +19,21 @@ public class CellDataUtils {
 
 	/**
 	 * A1方式をR1C1方式に直してMapに記載
-	 * @param HashMap key(column) = 行, key(row) = 列 
-	 * @return
+	 * @param A1方式
+	 * @return HashMap key(column) = 行, key(row) = 列 
 	 */
 	public static HashMap<String, Integer> convertCell(String cell) {
-		HashMap<String, Integer> result = new HashMap<String, Integer>();
-
-		//小文字の大文字変換
+		//正規表現にて行列を区別(小文字の大文字変換)
 		String upCell = cell.toUpperCase();
-
-		//正規表現にて行列を区別
 		Pattern p = Pattern.compile("([A-Z]+)([0-9]+)");
 		Matcher m = p.matcher(upCell);
 
 		//一致する場合のみ行列で格納
+		HashMap<String, Integer> result = new HashMap<String, Integer>();
 		if (m.find()) {
 			result.put("column", convertColumn(m.group(1)) - 1);
 			result.put("row", Integer.parseInt(m.group(2)) - 1);
 		}
-
 		return result;
 	}
 
@@ -80,13 +76,11 @@ public class CellDataUtils {
 		} catch (Exception e) {
 			//何も行わない。(Rowが使用されていない場合例外発生するため)
 		}
-
+		//取得できない場合行を作成する必要がある
 		if (row == null) {
 			row = sheet.createRow(rowNum);
 		}
-
 		return row;
-
 	}
 
 	/**
@@ -97,12 +91,33 @@ public class CellDataUtils {
 	 */
 	public static Cell getCell(Row row, int column) {
 		Cell cel = null;
-		cel = row.getCell(column);
+		try {
+			cel = row.getCell(column);
+		} catch (Exception e) {
+			//何も行わない。(Rowが使用されていない場合例外発生するため)
+		}
+		//取得できない場合セルを作成する必要がある
 		if (cel == null) {
-			//セルを作成
 			cel = row.createCell(column);
 		}
 		return cel;
+	}
 
+	/**
+	 * 行のサイズ設定
+	 * @param size 行サイズ
+	 * @return 行サイズ
+	 */
+	public static short getRowSize(int rowSize) {
+		return (short) (rowSize * 15);
+	}
+
+	/**
+	 * 列のサイズ設定
+	 * @param columnSize 列サイズ
+	 * @return 列サイズ
+	 */
+	public static int getColumnSize(int columnSize) {
+		return columnSize * 32;
 	}
 }
