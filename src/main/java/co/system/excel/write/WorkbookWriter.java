@@ -2,9 +2,7 @@ package co.system.excel.write;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -21,8 +19,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import co.system.excel.entity.SheetEntity;
 import co.system.excel.util.CellDataUtils;
-import co.system.excel.write.hssf.WriteHSSFWorkbook;
-import co.system.excel.write.xssf.WriteXSSFWorkbook;
 
 /**
  * Excel出力Util
@@ -46,8 +42,8 @@ public class WorkbookWriter {
 	 * @param inName ファイル名
 	 * @throws Exception 例外
 	 */
-	public WorkbookWriter(String inPath, String inName) throws Exception {
-		template(inPath, inName);
+	public Workbook WorkbookWriterMake(String inPath, String inName) throws Exception {
+		return template(inPath, inName);
 	}
 
 	/**
@@ -73,8 +69,8 @@ public class WorkbookWriter {
 	private void createWorkbook(String getpath, String name, SpreadsheetVersion version) throws Exception {
 
 		System.out.println("**処理開始**ワークブック作成****");
-		setOutputFile(path, file);
 
+		setOutputFile(path, file);
 		String messege;
 		switch (version) {
 		case EXCEL97:
@@ -90,7 +86,6 @@ public class WorkbookWriter {
 		}
 
 		System.out.println("**正常終了**[" + messege + "]で作成****");
-
 	}
 
 	/**
@@ -104,31 +99,20 @@ public class WorkbookWriter {
 		System.out.println("**処理開始**[" + file + "] に [" + trimSheetName + "]シートを作成****");
 
 		if (workbook instanceof HSSFWorkbook) {
-			sheetInfo = WriteHSSFWorkbook.createHSSFWorkbookSheet((HSSFWorkbook) workbook, count);
+			sheetInfo = createHSSFWorkbookSheet((HSSFWorkbook) workbook, count);
 		} else if (workbook instanceof XSSFWorkbook) {
-			sheetInfo = WriteXSSFWorkbook.createXSSFWorkbookSheet((XSSFWorkbook) workbook, count);
+			sheetInfo = createXSSFWorkbookSheet((XSSFWorkbook) workbook, count);
 		} else {
 			throw new Exception("Workbookに指定と違う型で作成されています。 xls形式:[HSSF] xlsx形式:[XSSF]");
 		}
 		SheetEntity sheet = new SheetEntity(count, trimSheetName, sheetInfo);
 		sheetMap.put(trimSheetName, sheet);
+
 		System.out.println("**正常終了**[" + file + "] に [" + sheetName.trim() + "]シートを作成(補足 :[" + count + "])****");
 
 		count += 1;
 
 		return;
-	}
-
-	/**
-	 * 複数のワークシートを作成後、Map(key=引数)で格納
-	 * @param String ワークシート名の文字列配列
-	 * @throws Exception 例外
-	 */
-	public void createWorkbookSheet(String[] sheetArray) throws Exception {
-		//取得ワークシートの配列を繰り返す。
-		for (String sheetName : sheetArray) {
-			createWorkbookSheet(sheetName);
-		}
 	}
 
 	/**
@@ -140,46 +124,19 @@ public class WorkbookWriter {
 	 */
 	public void writeCell(String sheetName, String cell, String value) throws Exception {
 
+		//cellのA1方式をR1C1方式で取得(rowで行の数値, columnで列の数値)
+		HashMap<String, Integer> cells = CellDataUtils.convertCell(cell);
+
+		//セルの取得(シート->列->セルとして取得)
 		String trimSheetName = sheetName.trim();
-		System.out.println("**処理開始**[" + trimSheetName + "] シートの [" + cell + "] : [" + value + "]で作成****");
-		try {
-			//cellのA1方式をR1C1方式で取得(rowで行の数値, columnで列の数値)
-			HashMap<String, Integer> cells = CellDataUtils.convertCell(cell);
+		Sheet nowSheet = sheetMap.get(trimSheetName).getSheet();
+		Row row = CellDataUtils.getRow(nowSheet, cells.get("row"));
+		Cell cel = CellDataUtils.getCell(row, cells.get("column"));
 
-			//シート取得
-			Sheet nowSheet = sheetMap.get(trimSheetName).getSheet();
+		//セルに値を設定する。
+		cel.setCellValue(value);
 
-			//セルと行の初期化
-			Row row = CellDataUtils.getRow(nowSheet, cells.get("row"));
-			Cell cel = CellDataUtils.getCell(row, cells.get("column"));
-
-			//セルに値を設定する。
-			cel.setCellValue(value);
-
-		} catch (Exception e) {
-			System.out.println("右記の格納に失敗しています。 : " + cell);
-			e.printStackTrace();
-		}
 		System.out.println("**正常終了**[" + trimSheetName + "] シートの [" + cell + "] : [" + value + "]で作成****");
-	}
-
-	/**
-	 * 複数の指定したシートのセルに値を書き込む
-	 * @param String シート名称
-	 * @param String[] セルの番号(A1方式)
-	 * @param String[] セルに書き込む値
-	 * @throws Exception 例外
-	 */
-	public void writeCell(String sheetName, String[] cells, String[] values) throws Exception {
-
-		//cell数とvaluesの総数チェック
-		if (cells.length != values.length) {
-			throw new Exception("セルの総数と値の総数が違います。");
-		}
-
-		for (int i = 0; i < cells.length; i++) {
-			writeCell(sheetName, cells[i], values[i]);
-		}
 	}
 
 	/**
@@ -191,13 +148,9 @@ public class WorkbookWriter {
 	 * @throws Exception 例外
 	 */
 	public void joinCell(String sheetName, String firstCell, String lastCell) throws Exception {
-
+		//結合開始・終了セルの数値を設定
 		String trimSheetName = sheetName.trim();
-
-		//結合開始セルの数値を設定
 		HashMap<String, Integer> firstCells = CellDataUtils.convertCell(firstCell);
-
-		//結合終了セルの数値を設定
 		HashMap<String, Integer> lastCells = CellDataUtils.convertCell(lastCell);
 
 		//開始rowの数値,終了rowの数値,開始columnの数値,終了columnの数値で結合できる。
@@ -205,41 +158,19 @@ public class WorkbookWriter {
 				lastCells.get("column") };
 
 		System.out.println("**処理開始**[" + trimSheetName + "] シートの [" + firstCell + "]～[" + lastCell + "]で結合****");
+		Sheet nowSheet;
 		if (workbook instanceof HSSFWorkbook) {
 			//xls形式のWorkbookを作成
-			HSSFSheet nowSheet = (HSSFSheet) sheetMap.get(trimSheetName).getSheet();
-			CellRangeAddress cra = new CellRangeAddress(firlasCells[0], firlasCells[1], firlasCells[2], firlasCells[3]);
-			nowSheet.addMergedRegion(cra);
-
+			nowSheet = (HSSFSheet) sheetMap.get(trimSheetName).getSheet();
 		} else if (workbook instanceof XSSFWorkbook) {
 			//xlsx形式のWorkbookを作成
-			XSSFSheet nowSheet = (XSSFSheet) sheetMap.get(trimSheetName).getSheet();
-			CellRangeAddress cra = new CellRangeAddress(firlasCells[0], firlasCells[1], firlasCells[2], firlasCells[3]);
-			nowSheet.addMergedRegion(cra);
-
+			nowSheet = (XSSFSheet) sheetMap.get(trimSheetName).getSheet();
 		} else {
 			throw new Exception("セルの入力に失敗しました。");
 		}
+		CellRangeAddress cra = new CellRangeAddress(firlasCells[0], firlasCells[1], firlasCells[2], firlasCells[3]);
+		nowSheet.addMergedRegion(cra);
 		System.out.println("**正常終了**[" + trimSheetName + "] シートの [" + firstCell + "]～[" + lastCell + "]で結合****");
-	}
-
-	/**
-	 * シートの全行のサイズを設定する。
-	 * @param String シート名
-	 * @param int  row(行)のサイズを設定
-	 * @throws Exception
-	 */
-	public void setAllRowSize(String sheetName, int rowSize) throws Exception {
-
-		String trimSheetName = sheetName.trim();
-
-		//シートを取得
-		Sheet getSheet = sheetMap.get(trimSheetName).getSheet();
-
-		//設定したセル分行う
-		for (int row : getSheet.getRowBreaks()) {
-			setRowSize(trimSheetName, row, rowSize * 32);
-		}
 	}
 
 	/**
@@ -289,13 +220,10 @@ public class WorkbookWriter {
 	 * @param String 変更するrowの数値
 	 * @param float  row(行)のサイズを設定
 	 */
-	private void setRowSize(String sheetName, int row, int rowSize) throws Exception {
-
+	public void setRowSize(String sheetName, int rowNum, int rowSize) throws Exception {
 		String trimSheetName = sheetName.trim();
-		Sheet getSheet = sheetMap.get(trimSheetName).getSheet();
-		getSheet.createRow(row);
-		Row rows = getSheet.getRow(row);
-		rows.setHeight((short) rowSize);
+		Row row = CellDataUtils.getRow(sheetMap.get(trimSheetName).getSheet(), rowNum--);
+		row.setHeight(CellDataUtils.getRowSize(rowSize));
 	}
 
 	/**
@@ -306,46 +234,16 @@ public class WorkbookWriter {
 	 */
 	public void setColumnSize(String sheetName, int column, int columnSize) throws Exception {
 
-		String trimSheetName = sheetName.trim();
-
 		//シートを取得
+		String trimSheetName = sheetName.trim();
 		Sheet getSheet = sheetMap.get(trimSheetName).getSheet();
 
 		System.out.println("**処理開始**[" + trimSheetName + "] シートの [" + column + "]のサイズを[" + columnSize + "]に変更****");
 
 		//指定列のサイズを設定
-		getSheet.setColumnWidth(column, columnSize * 32);
+		getSheet.setColumnWidth(column, CellDataUtils.getColumnSize(columnSize));
 
 		System.out.println("**正常終了**[" + trimSheetName + "] シートの [" + column + "]のサイズを[" + columnSize + "]に変更****");
-
-	}
-
-	/**
-	 * シートの指定範囲列のサイズを設定する。
-	 * @param String シート名
-	 * @param int column(列)のサイズを設定
-	 */
-	public void setColumnSize(String sheetName, int firstColumn, int lastColumn, int columnSize)
-			throws Exception {
-
-		String trimSheetName = sheetName.trim();
-		System.out.println("**処理開始**[" + trimSheetName + "] シートの [" + firstColumn + "]～[" + lastColumn + "]のサイズを["
-				+ columnSize + "]に変更****");
-
-		//行のサイズを設定
-		List<Integer> columns = new ArrayList<Integer>();
-
-		for (int i = firstColumn; i < lastColumn; i++) {
-			columns.add(i);
-		}
-
-		//全列のサイズを設定
-		for (int row : columns) {
-			setColumnSize(trimSheetName, row, columnSize * 32);
-		}
-
-		System.out.println("**正常終了**[" + trimSheetName + "] シートの [" + firstColumn + "]～[" + lastColumn + "]のサイズを["
-				+ columnSize + "]に変更****");
 
 	}
 
@@ -354,6 +252,7 @@ public class WorkbookWriter {
 	 * @param String シート名
 	 * @param int column(列)番号
 	 * @param int column(列)のサイズを設定
+	 * @throws Exception 例外
 	 */
 	public void setAllColumnSize(String sheetName, String column, int columnSize) throws Exception {
 
@@ -367,17 +266,15 @@ public class WorkbookWriter {
 	 * テンプレートファイルの読み込み
 	 * @param String 入力ファイルパス
 	 * @param String 入力ファイル名
-	 * @throws Exception
+	 * @throws Exception 例外
 	 */
-	public void template(String inPath, String inName) throws Exception {
+	public Workbook template(String inPath, String inName) throws Exception {
 		try {
+			//Excelファイルの読み込み
 			workbook = WorkbookFactory.create(new FileInputStream(inPath + inName));
-			int number = workbook.getSheetIndex("原本");
-			System.out.println("原本 : " + number);
 			System.out.println("シートの全シート数 : " + workbook.getNumberOfSheets());
 			for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-				//				sheet.put(workbook.getSheetName(count).trim(), workbook.getSheetAt(count));
-
+				//現在のシート情報を取得
 				SheetEntity sheet = new SheetEntity(count, workbook.getSheetName(count), workbook.getSheetAt(count));
 				sheetMap.put(workbook.getSheetName(count), sheet);
 				System.out.println("[" + inName + "]から[" + workbook.getSheetName(count) + "]シートを取得");
@@ -388,6 +285,7 @@ public class WorkbookWriter {
 		} catch (Exception e) {
 			throw new Exception("テンプレートの読み込みに失敗しました");
 		}
+		return workbook;
 
 	}
 
@@ -429,6 +327,34 @@ public class WorkbookWriter {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	/**
+	 * xls形式(EXCEL97)のシート作成
+	 * @param workbook ワークブック
+	 * @param count シート番号
+	 * @return シート情報
+	 * @throws Exception 例外
+	 */
+	private static HSSFSheet createHSSFWorkbookSheet(HSSFWorkbook workbook, int count) throws Exception {
+		//シートの作成
+		HSSFSheet argsSheet = (HSSFSheet) workbook.createSheet();
+		argsSheet = (HSSFSheet) workbook.getSheetAt(count);
+		return argsSheet;
+	}
+
+	/**
+	 * xlsx形式(EXCEL2007)のシート作成
+	 * @param workbook ワークブック
+	 * @param count シート番号
+	 * @return シート情報
+	 * @throws Exception 例外
+	 */
+	private static XSSFSheet createXSSFWorkbookSheet(XSSFWorkbook workbook, int count) throws Exception {
+		//シートの作成
+		XSSFSheet argsSheet = (XSSFSheet) workbook.createSheet();
+		argsSheet = (XSSFSheet) workbook.getSheetAt(count);
+		return argsSheet;
 	}
 
 }
