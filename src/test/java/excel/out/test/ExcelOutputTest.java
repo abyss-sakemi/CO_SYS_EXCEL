@@ -6,7 +6,6 @@ import co.system.excel.write.WorkbookWriter;
 
 public class ExcelOutputTest {
 
-
 	public static void main(String[] args) {
 		System.out.println("----< obj作成 >------------------");
 		try {
@@ -28,6 +27,7 @@ public class ExcelOutputTest {
 				}
 				work.setAllColumnSize(sheet1, str, 98);
 			}
+			work.setRowSize(sheet1, 1, 150);
 			work.excelOutput();
 
 		} catch (Exception e) {
